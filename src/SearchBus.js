@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react'
 import styled from 'styled-components/native';
 import { DOMParser } from 'xmldom';
-
+import Notification from './Notification';
 const Container = styled.View`
 flex : 1;
 justify-content: center;
@@ -21,6 +21,7 @@ function SearchBus({ ID }) {
 
     const [result, setResult] = useState([]); //도착정보 저장
     const [routeInfo, setRouteInfo] = useState([]); //노선정보 저장
+    const [tmp,setTmp]=useState([]);//임시로 잠깐 사용
 
     const handleRouteInfo = (item) => {
         setRouteInfo( routeInfo => { return routeInfo.push(item) })
@@ -109,17 +110,29 @@ function SearchBus({ ID }) {
         if (result.length == 0) {
           console.log("result is empty");
         }
+        
     };
     //
     // 렌더링 핸들링
     useEffect(() => {
+      for (var i in result){
+        console.log("result[i]",result[i].predict1);
+        if(result[i].predict1<10){
+        console.log("innnnn");
+          setTmp(result[i].predict1)
+        }
+      }
         searchBus();
+        
       }, []);
-
+      
     return(
-        console.log("노선 정보", routeInfo.length, "도착 정보", result.length),
+        console.log("노선 정보", routeInfo, "도착 정보", result),
         <Container>
+          <Notification time={tmp}/>
+          {console.log("console",tmp)}
         </Container>
+        
     )
 }
 
