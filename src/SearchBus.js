@@ -21,11 +21,11 @@ function SearchBus({ ID }) {
 
     const [result, setResult] = useState([]); //도착정보 저장
     const [routeInfo, setRouteInfo] = useState([]); //노선정보 저장
-    const [tmp,setTmp]=useState([]);//임시로 잠깐 사용
+    const [tmp,setTmp]=useState('');//임시로 잠깐 사용
 
     const handleRouteInfo = (item) => {
         setRouteInfo(routeInfo => [...routeInfo, item]);
-        console.log(routeInfo);
+       // console.log(routeInfo);
     }
 
     // 여기서부터 루트아이디 핸들링, 검색, Input : routeId (from busSearch), Output: 노선 번호/유형/종점정보
@@ -93,6 +93,10 @@ function SearchBus({ ID }) {
                 if (xmlDoc.getElementsByTagName("routeId")[i] == undefined) break;
               }
               setResult(array);
+              
+        {console.log("result",result)}
+        {console.log("result second ",result[0].predict1)}
+        setTmp(result[0].predict1)
             }
           }
           xhr.send();
@@ -115,29 +119,21 @@ function SearchBus({ ID }) {
           setTmp(result[i].predict1)
         }
       }*/
-      let tmp_array=[];
-      for (var i=0;i<10;i++){
-        tmp_array.push((i+1)*10)
-      }
-      setTmp(tmp_array)
-        searchBus();
-        
-      }, []);
       
+        searchBus();
+      //  setTmp(result[1].predict1);
+      }, []);
+    
     return(
-      /*console.log(result),
-      console.log(routeInfo),*/
+     // console.log("result",result),
+     // console.log("routeInfo",routeInfo),
         <Container>
-          {tmp.map(item=>{
-            return(
-              <Notification time={tmp[item]}/>
-            );
-          })} 
+              <Notification time={tmp}/>
           {console.log("console",tmp)}
-        </Container>
+       </Container>
         // Notification에 하나씩 보내는 게 맞을 듯,,? 그러면 훅을 어디서 쓰지
         // predict1만 계속 넘기면 될 듯
-        )
+        );
 }
 
 export default SearchBus;
