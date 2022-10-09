@@ -24,8 +24,8 @@ function SearchBus({ ID }) {
     const [tmp,setTmp]=useState([]);//임시로 잠깐 사용
 
     const handleRouteInfo = (item) => {
-      routeInfo.push(item);
-        setRouteInfo(routeInfo);
+        setRouteInfo(routeInfo => [...routeInfo, item]);
+        console.log(routeInfo);
     }
 
     // 여기서부터 루트아이디 핸들링, 검색, Input : routeId (from busSearch), Output: 노선 번호/유형/종점정보
@@ -80,6 +80,7 @@ function SearchBus({ ID }) {
                 var tmpnode = new Object();
                 tmpnode.routeId = xmlDoc.getElementsByTagName("routeId")[i].textContent;
                 searchRouteName(tmpnode.routeId);
+                console.log("this", tmpnode.routeId);
                 tmpnode.predict1 = xmlDoc.getElementsByTagName("predictTime1")[i].textContent;
                 tmpnode.loc1 = xmlDoc.getElementsByTagName("locationNo1")[i].textContent;
                 tmpnode.remain1 = xmlDoc.getElementsByTagName("remainSeatCnt1")[i].textContent;
@@ -124,8 +125,8 @@ function SearchBus({ ID }) {
       }, []);
       
     return(
-      console.log(result),
-      console.log(routeInfo),
+      /*console.log(result),
+      console.log(routeInfo),*/
         <Container>
           {tmp.map(item=>{
             return(
