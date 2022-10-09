@@ -24,7 +24,8 @@ function SearchBus({ ID }) {
     const [tmp,setTmp]=useState([]);//임시로 잠깐 사용
 
     const handleRouteInfo = (item) => {
-        setRouteInfo( routeInfo => { return routeInfo.push(item) })
+      routeInfo.push(item);
+        setRouteInfo(routeInfo);
     }
 
     // 여기서부터 루트아이디 핸들링, 검색, Input : routeId (from busSearch), Output: 노선 번호/유형/종점정보
@@ -39,23 +40,14 @@ function SearchBus({ ID }) {
               if (this.readyState == 4) {
                 let xmlParser = new DOMParser();
                 let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");
-                let i = 0;
-                let array = [];
-                while (1) {
-                  var tmpnode = new Object();
-                  tmpnode.index = i;
-                  tmpnode.routeId = xmlDoc.getElementsByTagName("routeId")[i].textContent;
-                  tmpnode.routeName = xmlDoc.getElementsByTagName("routeName")[i].textContent;
-                  tmpnode.routeType = xmlDoc.getElementsByTagName("routeTypeName")[i].textContent;
-                  tmpnode.startName = xmlDoc.getElementsByTagName("startStationName")[i].textContent;
-                  tmpnode.endName = xmlDoc.getElementsByTagName("endStationName")[i].textContent;
-                  tmpnode.region = xmlDoc.getElementsByTagName("regionName")[i].textContent;
-                  array.push(tmpnode);
-                  i++;
-                  if (xmlDoc.getElementsByTagName("routeId")[i] == undefined) break;
-                }
-                handleRouteInfo(array);
-                setRouteInfo(routeInfo);
+                  var route = new Object();
+                  route.routeId = xmlDoc.getElementsByTagName("routeId")[0].textContent;
+                  route.routeName = xmlDoc.getElementsByTagName("routeName")[0].textContent;
+                  route.routeType = xmlDoc.getElementsByTagName("routeTypeName")[0].textContent;
+                  route.startName = xmlDoc.getElementsByTagName("startStationName")[0].textContent;
+                  route.endName = xmlDoc.getElementsByTagName("endStationName")[0].textContent;
+                  route.region = xmlDoc.getElementsByTagName("regionName")[0].textContent;
+                handleRouteInfo(route);
               }
             }
             xhr.send();
@@ -115,25 +107,36 @@ function SearchBus({ ID }) {
     //
     // 렌더링 핸들링
     useEffect(() => {
-      for (var i in result){
+ /*     for (var i in result){
         console.log("result[i]",result[i].predict1);
         if(result[i].predict1<10){
         console.log("innnnn");
           setTmp(result[i].predict1)
         }
+      }*/
+      let tmp_array=[];
+      for (var i=0;i<10;i++){
+        tmp_array.push((i+1)*10)
       }
+      setTmp(tmp_array)
         searchBus();
         
       }, []);
       
     return(
-        console.log("노선 정보", routeInfo, "도착 정보", result),
+      console.log(result),
+      console.log(routeInfo),
         <Container>
-          <Notification time={tmp}/>
+          {tmp.map(item=>{
+            return(
+              <Notification time={tmp[item]}/>
+            );
+          })} 
           {console.log("console",tmp)}
         </Container>
-        
-    )
+        // Notification에 하나씩 보내는 게 맞을 듯,,? 그러면 훅을 어디서 쓰지
+        // predict1만 계속 넘기면 될 듯
+        )
 }
 
 export default SearchBus;

@@ -12,7 +12,8 @@ Notifications.setNotificationHandler({
 });
 
 //useInterval을 계속해서 불러줘야 하는건가? 여기서만? 아니면 둘다? 아니면 searchBus에서만? 
-// 둘 다 계속 useInterval을 통해 searchBus에서는 값을 계속해서 저장하고, Notification에서는 계속해서 값을 불러오기 
+// 둘 다 계속 useInterval을 통해 searchBus에서는 값을 계속해서 저장하고, Notification에서는 계속해서 값을 불러오기
+// searchBus에서는 값을 하나씩만 넘겨야지 오류가 안 생길 듯, 단일 값 넘길 때는 문제 안 생기는 듯?
 function GetNotification(time){
 if (Platform.OS === "android") {
   Notifications.setNotificationChannelAsync("default", {
