@@ -5,6 +5,7 @@ import { FlatList, StyleSheet, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppLoading from 'expo-app-loading';
 import BusList from '../modules/BusList';
+import RealTime from '../modules/RealTime';
 
 const Container = styled.View`
 flex : 1;
@@ -20,8 +21,10 @@ font-size : 15px;
 margin-bottom : 10px;
 `;
 
-function SearchBus({ ID }) {
+function SearchBus({ item }) {
   //1. screens/SearchBus의 자식, screens/SearchBus로부터 stationID 받음
+
+  console.log("this", item);
 
   const [result, setResult] = useState([]); //도착정보 저장
   const [routeInfo, setRouteInfo] = useState([]); //노선정보 저장
@@ -39,7 +42,7 @@ function SearchBus({ ID }) {
 
 
     for (var i = 0; i < result.length; i++) {
-      me = { ...result[i], ...routeInfo[i] };
+      me = { ...result[i], ...routeInfo[i], ...item };
       array.push(me);
     }
     setMerge(array);
@@ -64,10 +67,10 @@ function SearchBus({ ID }) {
   const searchRouteName = async (routeId) => {
     try {
       var xhr = new XMLHttpRequest();
-      const API_KEY = 'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
-      const url = 'http://apis.data.go.kr/6410000/busrouteservice/getBusRouteInfoItem';
-      var queryParams = `${url}?serviceKey=${API_KEY}&routeId=${routeId}`;
-      xhr.open('GET', queryParams);
+      const url = 'http://apis.data.go.kr/6410000/busrouteservice/getBusRouteInfoItem'; 
+      var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
+      queryParams += '&' + encodeURIComponent('routeId') + '=' + encodeURIComponent(routeId); // xhr.open('GET', url + queryParams); 
+      xhr.open('GET', url + queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
           let xmlParser = new DOMParser();
@@ -98,10 +101,10 @@ function SearchBus({ ID }) {
     //getBusArrivalList, input param : stationId (ID)
     try {
       var xhr = new XMLHttpRequest();
-      const API_KEY = 'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
-      const url = 'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalList'; /*URL*/
-      var queryParams = `${url}?serviceKey=${API_KEY}&stationId=${ID}`;
-      xhr.open('GET', queryParams);
+      const url = 'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalList'; 
+      var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
+      queryParams += '&' + encodeURIComponent('stationId') + '=' + encodeURIComponent(item.id); // xhr.open('GET', url + queryParams); 
+      xhr.open('GET', url + queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
           let xmlParser = new DOMParser();
@@ -112,13 +115,6 @@ function SearchBus({ ID }) {
             var tmpnode = new Object();
             tmpnode.routeId = xmlDoc.getElementsByTagName("routeId")[i].textContent;
             searchRouteName(tmpnode.routeId);
-            tmpnode.predict1 = xmlDoc.getElementsByTagName("predictTime1")[i].textContent;
-            tmpnode.loc1 = xmlDoc.getElementsByTagName("locationNo1")[i].textContent;
-            tmpnode.remain1 = xmlDoc.getElementsByTagName("remainSeatCnt1")[i].textContent;
-            tmpnode.predict2 = xmlDoc.getElementsByTagName("predictTime2")[i].textContent;
-            tmpnode.loc2 = xmlDoc.getElementsByTagName("locationNo2")[i].textContent;
-            tmpnode.remain2 = xmlDoc.getElementsByTagName("remainSeatCnt2")[i].textContent;
-            tmpnode.staOrder = xmlDoc.getElementsByTagName("staOrder")[i].textContent;
             tmpnode.clicked = false;
             array.push(tmpnode);
             for (var routeId in storage) {
@@ -153,9 +149,8 @@ function SearchBus({ ID }) {
 
 
   return isReady ? (
-    console.log("result", result.length, "routeInfo", routeInfo.length, "merge", merge.length),
-
-    <Container>
+      <Container>
+      <RealTime/>
       <FlatList
         keyExtractor={item => item.routeId}
         data={merge}

@@ -29,17 +29,13 @@ margin-bottom : 10px;
 
 const SearchBus = ({ route, navigation }) => {
 
-    const itemId = route.params.itemId;
+    const item = route.params.item;
 
-    console.log("item id route is", itemId);
-
-    const ID = itemId;
-
-    console.log(ID);
+    console.log("item id route is", item);
 
     return(
         <Container>
-            <SearchBussrc ID = {ID}/>
+            <SearchBussrc item = {item}/>
         </Container>
     )
 }

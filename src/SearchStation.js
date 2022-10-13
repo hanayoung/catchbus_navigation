@@ -44,10 +44,10 @@ function SearchStation({stationToBus})
     console.log("working");
     try {
       var xhr = new XMLHttpRequest();
-      const API_KEY = 'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
-      const url = 'http://apis.data.go.kr/6410000/busstationservice/getBusStationList'; /*URL*/
-      var queryParams = `${url}?serviceKey=${API_KEY}&keyword=${station}`;
-      xhr.open('GET', queryParams);
+      const url = 'http://apis.data.go.kr/6410000/busstationservice/getBusStationList'; 
+      var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D'; 
+      queryParams += '&' + encodeURIComponent('keyword') + '=' + encodeURIComponent(station); /**/ 
+      xhr.open('GET', url + queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
           let xmlParser = new DOMParser();
