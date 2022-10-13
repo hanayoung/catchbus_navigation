@@ -35,6 +35,7 @@ const FavList = ({ navigation }) => {
             <Button
             title = "메인페이지"
             onPress = {()=> navigation.navigate('Main')}/>
+    
         </Container>
     )
 }

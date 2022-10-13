@@ -40,15 +40,6 @@ const SearchBus = ({ route, navigation }) => {
     return(
         <Container>
             <SearchBussrc ID = {ID}/>
-            <Button 
-            title = "버스" 
-            onPress = {()=> navigation.navigate('BusRoute')}/>
-            <Button
-            title = "타이머"
-            onPress = {() => navigation.navigate('Timer')}/>
-            <Button
-            title = "별"
-            onPress = {()=> navigation.navigate('FavList')}/>
         </Container>
     )
 }

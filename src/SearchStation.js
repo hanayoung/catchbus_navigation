@@ -5,25 +5,18 @@ import { DOMParser } from 'xmldom';
 import ReactDOM, { render } from 'react-dom';
 import styled from 'styled-components/native';
 import StationList from '../modules/StationList';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from "expo-location";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppLoading from 'expo-app-loading';
 
 // 2. screens/SearchStation의 자식
 
-const List = styled.ScrollView`
-flex: 1;
-width: ${({ width }) => width - 40}px;
-`;
-
 function SearchStation({stationToBus})
  {
   const [station, setStation] = useState('');
   const [result, setResult] = useState([]);
   const [initialRegion, setinitialRegion] = useState();
-  const [isReady, setIsReady] = useState(false);
-  const [storage, setStorage] = useState({});
   //함수형 컴포넌트 const -> useEffect로 해결
  
   const goBus = (item) => {
@@ -45,20 +38,6 @@ function SearchStation({stationToBus})
     setStation(text);
   }
 
-  const _saveResults = async result => {
-    try {
-      await AsyncStorage.setItem('results', JSON.stringify(result));
-      setStorage(result);
-      console.log('Storage', storage);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const _loadResult = async () => {
-    const loadedResult = await AsyncStorage.getItem('results');
-    setStorage(JSON.parse(loadedResult));
-  };
 
 
   const searchStation = async () => {
@@ -67,9 +46,8 @@ function SearchStation({stationToBus})
       var xhr = new XMLHttpRequest();
       const API_KEY = 'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
       const url = 'http://apis.data.go.kr/6410000/busstationservice/getBusStationList'; /*URL*/
-      var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D'; /*Service Key*/
-      queryParams += '&' + encodeURIComponent('keyword') + '=' + encodeURIComponent(station); /**/
-      xhr.open('GET', url + queryParams);
+      var queryParams = `${url}?serviceKey=${API_KEY}&keyword=${station}`;
+      xhr.open('GET', queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
           let xmlParser = new DOMParser();
@@ -83,12 +61,7 @@ function SearchStation({stationToBus})
             tmpnode.name = xmlDoc.getElementsByTagName("stationName")[i].textContent;
             tmpnode.x = xmlDoc.getElementsByTagName("x")[i].textContent;
             tmpnode.y = xmlDoc.getElementsByTagName("y")[i].textContent;
-            tmpnode.clicked = false;
             array.push(tmpnode);
-            for (var id in storage) {
-              if (tmpnode.id == id)
-                tmpnode.clicked = true;
-            }
             i++;
             if (xmlDoc.getElementsByTagName("stationId")[i] == undefined) break;
           }
@@ -116,7 +89,7 @@ function SearchStation({stationToBus})
     searchStation();
   }, []);
 
-  return isReady ? (
+  return (
     <View style={styles.container}>
       <Text style={styles.title}>CatchBus</Text>
       <TextInput
@@ -134,6 +107,7 @@ function SearchStation({stationToBus})
         style={[styles.map]}
         showsUserLocation={true}
         showsMyLocationButton={true}
+        provider={PROVIDER_GOOGLE}
       >
         {result && result.map((item) => {
           return (
@@ -156,20 +130,12 @@ function SearchStation({stationToBus})
         renderItem={({ item }) => (
           <StationList
             item={item}
-            saveResult={_saveResults}
-            storage={storage}
             goBus={goBus}
           />
         )}
         windowSize={3}
       />
     </View>
-  ) : (
-    <AppLoading
-      startAsync={_loadResult}
-      onFinish={() => setIsReady(true)}
-      onError={console.error}
-    />
   );
 
 }
