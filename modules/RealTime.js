@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { TouchableOpacity, FlatList, StyleSheet, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppLoading from 'expo-app-loading';
+import Notification from "../src/Notification";
 
 const Content_name = styled.Text`
 flex: 1;
@@ -33,7 +34,7 @@ const RealTime = () => {
     const [result, setResult] = useState({});
 
     const [isRunning, setIsRunning] = useState(false);
-    const [delay, setDelay] = useState(3000);
+    const [delay, setDelay] = useState(60000);
 
 
     function useInterval(callback, delay) {
@@ -77,7 +78,7 @@ const RealTime = () => {
             tmpnode.remain2 = xmlDoc.getElementsByTagName("remainSeatCnt2")[0].textContent;
             tmpnode.staOrder = xmlDoc.getElementsByTagName("staOrder")[0].textContent;
             setResult(tmpnode);
-            console.log("result", result);
+          //  console.log("result", result);
           }
         }
         setIsRunning(false);
@@ -89,17 +90,19 @@ const RealTime = () => {
     if (result.length == 0) {
       console.log("result is empty");
     }
-
   };
   //
   // 렌더링 핸들링
 
   useInterval(() => {
-    predictRealTime(),
-    console.log("this", result);
+    predictRealTime()
+    //console.log("this realtime", result);
+    
   }, isRunning ? delay : null);
 
-
+return(
+<Notification result={result}/>
+)
 }
 
 

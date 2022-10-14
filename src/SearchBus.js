@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components/native';
 import { DOMParser } from 'xmldom';
 import { FlatList, StyleSheet, Text } from 'react-native';
@@ -26,11 +26,34 @@ function SearchBus({ item }) {
 
   console.log("this", item);
 
+  //const [isRunning, setIsRunning] = useState(false);
+  //const [delay, setDelay] = useState(3000);
+
+  function useInterval(callback, delay) {
+    
+    const savedCallback = useRef(); // 최근에 들어온 callback을 저장할 ref를 하나 만든다.
+
+    useEffect(() => {
+      savedCallback.current = callback; // callback이 바뀔 때마다 ref를 업데이트 해준다.
+    }, [callback]);
+
+    useEffect(() => {
+      function tick() {
+        savedCallback.current(); // tick이 실행되면 callback 함수를 실행시킨다.
+      }
+        let id = setInterval(tick, delay); // delay에 맞추어 interval을 새로 실행시킨다.
+        return () => clearInterval(id); // unmount될 때 clearInterval을 해준다.
+    }, [delay]); // delay가 바뀔 때마다 새로 실행된다.
+  }
+
+
   const [result, setResult] = useState([]); //도착정보 저장
   const [routeInfo, setRouteInfo] = useState([]); //노선정보 저장
   const [merge, setMerge] = useState([]); //두 배열 합치기
   const [isReady, setIsReady] = useState(false);
   const [storage, setStorage] = useState({});
+  const [isRunning, setIsRunning] = useState(false);
+  const [delay, setDelay] = useState(3000);
 
   const handleRouteInfo = (item) => {
     setRouteInfo(routeInfo => [...routeInfo, item]);
@@ -107,6 +130,7 @@ function SearchBus({ item }) {
       xhr.open('GET', url + queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
+          setIsRunning(true);
           let xmlParser = new DOMParser();
           let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");
           let i = 0;
@@ -116,6 +140,13 @@ function SearchBus({ item }) {
             tmpnode.routeId = xmlDoc.getElementsByTagName("routeId")[i].textContent;
             searchRouteName(tmpnode.routeId);
             tmpnode.clicked = false;
+            tmpnode.predict1 = xmlDoc.getElementsByTagName("predictTime1")[i].textContent;
+            tmpnode.loc1 = xmlDoc.getElementsByTagName("locationNo1")[i].textContent;
+            tmpnode.remain1 = xmlDoc.getElementsByTagName("remainSeatCnt1")[i].textContent;
+            tmpnode.predict2 = xmlDoc.getElementsByTagName("predictTime2")[i].textContent;
+            tmpnode.loc2 = xmlDoc.getElementsByTagName("locationNo2")[i].textContent;
+            tmpnode.remain2 = xmlDoc.getElementsByTagName("remainSeatCnt2")[i].textContent;
+            tmpnode.staOrder = xmlDoc.getElementsByTagName("staOrder")[i].textContent;
             array.push(tmpnode);
             for (var routeId in storage) {
               if (tmpnode.routeId == routeId)
@@ -140,13 +171,13 @@ function SearchBus({ item }) {
   //
   // 렌더링 핸들링
   useEffect(() => {
-    searchBus();
-  }, []);
-
-  useEffect(() => {
     Merge();
   }, [routeInfo.length]);
 
+  useInterval(() => {
+    searchBus(),
+    console.log("this", result);
+  }, isRunning ? delay : null);
 
   return isReady ? (
       <Container>
