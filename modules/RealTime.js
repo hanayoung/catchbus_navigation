@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { TouchableOpacity, FlatList, StyleSheet, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppLoading from 'expo-app-loading';
-import Notification from "../src/Notification";
 
 const Content_name = styled.Text`
 flex: 1;
@@ -100,9 +99,6 @@ const RealTime = () => {
     
   }, isRunning ? delay : null);
 
-return(
-<Notification result={result}/>
-)
 }
 
 
