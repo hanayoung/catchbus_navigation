@@ -31,7 +31,7 @@ const SearchStation = ({ navigation }) => {
     const stationToBus = (item) => {
         console.log("before bus search", item);
         setItem(item);
-        navigation.navigate('SearchBus', { itemId : item.id });
+        navigation.navigate('SearchBus', { item : item });
       }
 
     return(

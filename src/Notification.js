@@ -17,8 +17,11 @@ Notifications.setNotificationHandler({
 //useInterval을 계속해서 불러줘야 하는건가? 여기서만? 아니면 둘다? 아니면 searchBus에서만? 
 // 둘 다 계속 useInterval을 통해 searchBus에서는 값을 계속해서 저장하고, Notification에서는 계속해서 값을 불러오기
 // searchBus에서는 값을 하나씩만 넘겨야지 오류가 안 생길 듯, 단일 값 넘길 때는 문제 안 생기는 듯?
-function GetNotification({storage}){ //routeId를 같이 넘겨줄 수 있어야지 뭔지 알고 time 설정할 듯?
+function GetNotification({result}){ //routeId를 같이 넘겨줄 수 있어야지 뭔지 알고 time 설정할 듯?
   //console.log("storage in Noti",storage.undefined.predict1);
+  console.log("iiiin here in Notification");
+  console.log("result",result);
+  
 const [time,setTime]=useState(0);
 const [expoPushToken, setExpoPushToken] = useState('');
 const [notification, setNotification] = useState(false);
@@ -84,17 +87,18 @@ useEffect(() => {
 useInterval(()=>{
   console.log("iiiiiinnnnnnnn");
     //setTime(Number(arr.predict1)*60);
-    setTime(Number(storage.undefined.predict1)*60) // 일단 원하는 분 이전일 때 바로 알림이 뜨는지 확인 (time =1 이런 게 먹히는지 확인해보기 )
-    console.log("storage in Nottttti second",storage)
-    console.log("innnn");
+    setTime(Number(result.predict1)*60) // 일단 원하는 분 이전일 때 바로 알림이 뜨는지 확인 (time =1 이런 게 먹히는지 확인해보기 )
+    console.log("result in Nottttti second",result)
     schedulePushNotification();
 },60000);
 
-useEffect(()=>{
+/*useEffect(()=>{
   console.log("jjjjjjjj");
-  setTime(Number(storage.undefined.predict1)*60)
-  console.log("storge in Noti useEffect ",storage);
-},[storage]);
+  setTime(Number(result.predict1)*60)
+  console.log("result in Noti useEffect ",result);
+  schedulePushNotification();
+},[result]);*/
+
 async function schedulePushNotification() {
  console.log("time",time)
  if(time<600){
@@ -102,7 +106,7 @@ await Notifications.scheduleNotificationAsync({
    // 화면에 뜨는 내용
    content:{
     title:"Bus is Coming!",
-    body:`${storage.undefined.routename} is coming in ${(time/60)}!`,
+    body:`Bus is coming in ${(time/60)} minutes !`,
    },
    trigger: { 
     seconds: 1, // 0은 안 먹히고 1도 한 5초? 후에 뜸
