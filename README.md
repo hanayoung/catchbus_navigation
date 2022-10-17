@@ -3,7 +3,7 @@
 api 핸들러 최적화 및 merge 함수 수정</br>
 2. api 호출 시 기존 xhr에서 axios로 변경 (npm install axios)</br>
 성능 개선에 도움, undefined 해결, 은정윤서 쿼리문제 해결 가능성 있음!, xhr 너무 옛날 방식</br>
-</br></br>
+</br>
 앞으로 해야 할 일</br>
 1. searchbus에는 한번만 실시간 정보 나오게 변형</br>
 2. 은정이 컴포넌트와 연결해서 설정한 하나의 오브젝트에 대해서만 실시간 정보 반영</br>
