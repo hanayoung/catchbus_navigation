@@ -31,8 +31,6 @@ const SearchBus = ({ route, navigation }) => {
 
     const item = route.params.item;
 
-    console.log("item id route is", item);
-
     return(
         <Container>
             <SearchBussrc item = {item}/>

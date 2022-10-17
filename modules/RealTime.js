@@ -64,7 +64,6 @@ const RealTime = () => {
       xhr.open('GET', url + queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
-          console.log("api ok");
           setIsRunning(true);
           let xmlParser = new DOMParser();
           let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");

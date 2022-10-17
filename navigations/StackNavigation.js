@@ -14,6 +14,10 @@ const Stack = createStackNavigator();
 
 const StackNavigation = () => {
 
+    console.disableYellowBox = true;
+    console.disableRedBox = true;
+
+    
     return (
         <Stack.Navigator initialRouteName = "Home">
             <Stack.Screen name = "Main" component = {Main}/>

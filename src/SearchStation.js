@@ -2,13 +2,10 @@ import React, { useEffect } from 'react'
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Dimensions, FlatList, StatusBar, SafeAreaView } from 'react-native';
 import { DOMParser } from 'xmldom';
-import ReactDOM, { render } from 'react-dom';
-import styled from 'styled-components/native';
 import StationList from '../modules/StationList';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from "expo-location";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import AppLoading from 'expo-app-loading';
+import axios from 'axios';
 
 // 2. screens/SearchStation의 자식
 
@@ -24,7 +21,6 @@ function SearchStation({stationToBus})
   }
 
   const ask = async () => {
-    const { granted } = await Location.requestForegroundPermissionsAsync();
     const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({ accuracy: 5 }); //coords를 통해 현재 위치의 좌표 받기
     setinitialRegion({
       latitude: latitude,
@@ -38,49 +34,37 @@ function SearchStation({stationToBus})
     setStation(text);
   }
 
-
-
   const searchStation = async () => {
-    console.log("working");
     try {
-      var xhr = new XMLHttpRequest();
       const url = 'http://apis.data.go.kr/6410000/busstationservice/getBusStationList'; 
       var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D'; 
       queryParams += '&' + encodeURIComponent('keyword') + '=' + encodeURIComponent(station); /**/ 
-      xhr.open('GET', url + queryParams);
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4) {
-          let xmlParser = new DOMParser();
-          let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");
-          let i = 0;
-          let array = [];
-          while (1) {
-            var tmpnode = new Object();
-            tmpnode.index = i;
-            tmpnode.id = xmlDoc.getElementsByTagName("stationId")[i].textContent;
-            tmpnode.name = xmlDoc.getElementsByTagName("stationName")[i].textContent;
-            tmpnode.x = xmlDoc.getElementsByTagName("x")[i].textContent;
-            tmpnode.y = xmlDoc.getElementsByTagName("y")[i].textContent;
-            array.push(tmpnode);
-            i++;
-            if (xmlDoc.getElementsByTagName("stationId")[i] == undefined) break;
-          }
-          setResult(array);
-          setinitialRegion({
-            latitude: Number(array[0].y),
-            longitude: Number(array[0].x),
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02
-          })
-        }
+      var result = await axios.get(url+queryParams);
+      let xmlParser = new DOMParser();
+      let xmlDoc = xmlParser.parseFromString(result.data, "text/xml");
+      let i = 0;
+      let array = [];
+      while (1) {
+        var tmpnode = new Object();
+        tmpnode.index = i;
+        tmpnode.id = xmlDoc.getElementsByTagName("stationId")[i].textContent;
+        tmpnode.name = xmlDoc.getElementsByTagName("stationName")[i].textContent;
+        tmpnode.x = xmlDoc.getElementsByTagName("x")[i].textContent;
+        tmpnode.y = xmlDoc.getElementsByTagName("y")[i].textContent;
+        array.push(tmpnode);
+        i++;
+        if (xmlDoc.getElementsByTagName("stationId")[i] == undefined) break;
       }
-      xhr.send();
+      setResult(array);
+      setinitialRegion({
+        latitude: Number(array[0].y),
+        longitude: Number(array[0].x),
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02
+      })
     }
     catch (err) {
-      alert(err);
-    }
-    if (result.length == 0) {
-      console.log("result is empty");
+      //alert(err);
     }
   };
 

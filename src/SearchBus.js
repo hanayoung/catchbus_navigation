@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components/native';
 import { DOMParser } from 'xmldom';
-import { FlatList, StyleSheet, Text } from 'react-native';
+import { FlatList, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppLoading from 'expo-app-loading';
 import BusList from '../modules/BusList';
 import RealTime from '../modules/RealTime';
+import axios from 'axios';
 
 const Container = styled.View`
 flex : 1;
@@ -22,12 +23,8 @@ margin-bottom : 10px;
 `;
 
 function SearchBus({ item }) {
+
   //1. screens/SearchBus의 자식, screens/SearchBus로부터 stationID 받음
-
-  console.log("this", item);
-
-  //const [isRunning, setIsRunning] = useState(false);
-  //const [delay, setDelay] = useState(3000);
 
   function useInterval(callback, delay) {
     
@@ -53,29 +50,39 @@ function SearchBus({ item }) {
   const [isReady, setIsReady] = useState(false);
   const [storage, setStorage] = useState({});
   const [isRunning, setIsRunning] = useState(false);
-  const [delay, setDelay] = useState(3000);
+  const [delay, setDelay] = useState(10000);
+  const [routearray, setRouteArray] = useState([]);
+  const [ok, setOk] = useState(false);
 
   const handleRouteInfo = (item) => {
     setRouteInfo(routeInfo => [...routeInfo, item]);
   }
 
-  const Merge = async () => {    //result, routeInfo 병합
-    let array = [];
-    let me = {};
-
-
-    for (var i = 0; i < result.length; i++) {
-      me = { ...result[i], ...routeInfo[i], ...item };
-      array.push(me);
+  const handleRouteArray = () => {
+    const length = routearray.length;
+    for(let i = 0; i < length; i++){
+      console.log("passing before", routearray[i]);
+      searchRouteName(routearray[i]);
+      }
     }
-    setMerge(array);
+
+  const Merge = async () => {    //result, routeInfo routeId를 키값으로 병합
+    let buslist = [];
+    for (var i = 0; i < result.length; i++) {
+      let routeId = result[i].routeId;
+      let route = routeInfo.find((r) => r.paramID == routeId)
+      if(route != undefined){
+        result[i].routeName = route.routeName;
+        buslist.push(result[i]);
+      }
+    }
+    setMerge(buslist);
   };
 
   const _saveResults = async result => {
     try {
       await AsyncStorage.setItem('results', JSON.stringify(result));
       setStorage(result);
-      console.log('Storage', storage);
     } catch (e) {
       console.error(e);
     }
@@ -89,95 +96,82 @@ function SearchBus({ item }) {
   // 여기서부터 루트아이디 핸들링, 검색, Input : routeId (from busSearch), Output: 노선 번호/유형/종점정보
   const searchRouteName = async (routeId) => {
     try {
-      var xhr = new XMLHttpRequest();
       const url = 'http://apis.data.go.kr/6410000/busrouteservice/getBusRouteInfoItem'; 
       var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
-      queryParams += '&' + encodeURIComponent('routeId') + '=' + encodeURIComponent(routeId); // xhr.open('GET', url + queryParams); 
-      xhr.open('GET', url + queryParams);
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4) {
-          let xmlParser = new DOMParser();
-          let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");
-          var route = new Object();
-          route.routeId = xmlDoc.getElementsByTagName("routeId")[0].textContent;
-          route.routeName = xmlDoc.getElementsByTagName("routeName")[0].textContent;
-          route.routeType = xmlDoc.getElementsByTagName("routeTypeName")[0].textContent;
-          route.startName = xmlDoc.getElementsByTagName("startStationName")[0].textContent;
-          route.endName = xmlDoc.getElementsByTagName("endStationName")[0].textContent;
-          route.region = xmlDoc.getElementsByTagName("regionName")[0].textContent;
-          handleRouteInfo(route);
-        }
-      }
-      xhr.send();
+      queryParams += '&' + encodeURIComponent('routeId') + '=' + encodeURIComponent(routeId); // xhr.open('GET', url + queryParams);    
+      var result = await axios.get(url+queryParams);
+      let xmlParser = new DOMParser();
+      let xmlDoc = xmlParser.parseFromString(result.data, "text/xml");
+      var route = new Object();
+      route.paramID = routeId;
+      route.routeName = xmlDoc.getElementsByTagName("routeName")[0].textContent;
+      route.routeType = xmlDoc.getElementsByTagName("routeTypeName")[0].textContent;
+      route.startName = xmlDoc.getElementsByTagName("startStationName")[0].textContent;
+      route.endName = xmlDoc.getElementsByTagName("endStationName")[0].textContent;
+      route.region = xmlDoc.getElementsByTagName("regionName")[0].textContent;
+      handleRouteInfo(route);
     }
     catch (err) {
       alert(err);
     }
-    if (routeInfo.length == 0) {
-      console.log("routeInfo is empty");
-    }
-
   }
 
   // 여기서부터 버스 도착 정보 검색, (Input; stationID, Output: 노선 정보와 기타 도착 정보)
   const searchBus = async () => {
     //getBusArrivalList, input param : stationId (ID)
     try {
-      var xhr = new XMLHttpRequest();
       const url = 'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalList'; 
       var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
       queryParams += '&' + encodeURIComponent('stationId') + '=' + encodeURIComponent(item.id); // xhr.open('GET', url + queryParams); 
-      xhr.open('GET', url + queryParams);
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4) {
-          setIsRunning(true);
-          let xmlParser = new DOMParser();
-          let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");
-          let i = 0;
-          let array = [];
-          while (1) {
-            var tmpnode = new Object();
-            tmpnode.routeId = xmlDoc.getElementsByTagName("routeId")[i].textContent;
-            searchRouteName(tmpnode.routeId);
-            tmpnode.clicked = false;
-            tmpnode.predict1 = xmlDoc.getElementsByTagName("predictTime1")[i].textContent;
-            tmpnode.loc1 = xmlDoc.getElementsByTagName("locationNo1")[i].textContent;
-            tmpnode.remain1 = xmlDoc.getElementsByTagName("remainSeatCnt1")[i].textContent;
-            tmpnode.predict2 = xmlDoc.getElementsByTagName("predictTime2")[i].textContent;
-            tmpnode.loc2 = xmlDoc.getElementsByTagName("locationNo2")[i].textContent;
-            tmpnode.remain2 = xmlDoc.getElementsByTagName("remainSeatCnt2")[i].textContent;
-            tmpnode.staOrder = xmlDoc.getElementsByTagName("staOrder")[i].textContent;
-            array.push(tmpnode);
-            for (var routeId in storage) {
-              if (tmpnode.routeId == routeId)
-                tmpnode.clicked = true;
-            }
-            i++;
-            if (xmlDoc.getElementsByTagName("routeId")[i] == undefined) break;
-          }
-          setResult(array);
+      var result = await axios.get(url+queryParams);
+      let xmlParser = new DOMParser();
+      let xmlDoc = xmlParser.parseFromString(result.data, "text/xml");    
+      setIsRunning(true);
+      let i = 0;
+      let array = [];
+      let routearray = [];
+      while (1) {
+        var tmpnode = new Object();
+        tmpnode.routeId = xmlDoc.getElementsByTagName("routeId")[i].textContent;
+        routearray.push(tmpnode.routeId);
+        tmpnode.clicked = false;
+        tmpnode.predict1 = xmlDoc.getElementsByTagName("predictTime1")[i].textContent;
+        tmpnode.loc1 = xmlDoc.getElementsByTagName("locationNo1")[i].textContent;
+        tmpnode.remain1 = xmlDoc.getElementsByTagName("remainSeatCnt1")[i].textContent;
+        tmpnode.predict2 = xmlDoc.getElementsByTagName("predictTime2")[i].textContent;
+        tmpnode.loc2 = xmlDoc.getElementsByTagName("locationNo2")[i].textContent;
+        tmpnode.remain2 = xmlDoc.getElementsByTagName("remainSeatCnt2")[i].textContent;
+        tmpnode.staOrder = xmlDoc.getElementsByTagName("staOrder")[i].textContent;
+        array.push(tmpnode);
+        for (var routeId in storage) {
+          if (tmpnode.routeId == routeId)
+            tmpnode.clicked = true;
+        }
+        i++;
+        if (xmlDoc.getElementsByTagName("routeId")[i] == undefined) { 
+          setRouteArray(routearray);
+          break; 
         }
       }
-      xhr.send();
+      setResult(array);
+      setOk(true);
     }
     catch (err) {
       alert(err);
     }
-    if (result.length == 0) {
-      console.log("result is empty");
-    }
-
   };
-  //
   // 렌더링 핸들링
   useEffect(() => {
     Merge();
-  }, [routeInfo.length]);
+  }, [result]);
 
   useInterval(() => {
-    searchBus(),
-    console.log("this", result);
+    searchBus();
   }, isRunning ? delay : null);
+
+  useEffect(()=>{
+    handleRouteArray();
+  }, [ok]);
 
   return isReady ? (
       <Container>
