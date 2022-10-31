@@ -2,13 +2,10 @@ import React, { useEffect } from 'react'
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Dimensions, FlatList, StatusBar, SafeAreaView } from 'react-native';
 import { DOMParser } from 'xmldom';
-import ReactDOM, { render } from 'react-dom';
-import styled from 'styled-components/native';
 import StationList from '../modules/StationList';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from "expo-location";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import AppLoading from 'expo-app-loading';
+import { FontAwesome } from '@expo/vector-icons'; 
 
 // 2. screens/SearchStation의 자식
 
@@ -37,7 +34,21 @@ function SearchStation({stationToBus})
   const handleStation = text => {
     setStation(text);
   }
-
+  const handleResult=(arr)=>{
+    arr.sort(function(a,b){
+        return a.dis-b.dis;
+    });
+    setResult(arr);
+    setRegion(arr[0].x,arr[0].y);
+}
+const setRegion=(x,y)=>{
+    setinitialRegion({
+        latitude:Number(y),
+        longitude:Number(x),
+        latitudeDelta:0.002,
+        longitudeDelta:0.002
+    })
+    }
 
 
   const searchStation = async () => {
@@ -61,17 +72,13 @@ function SearchStation({stationToBus})
             tmpnode.name = xmlDoc.getElementsByTagName("stationName")[i].textContent;
             tmpnode.x = xmlDoc.getElementsByTagName("x")[i].textContent;
             tmpnode.y = xmlDoc.getElementsByTagName("y")[i].textContent;
+            tmpnode.dis=Math.pow((initialRegion.longitude-tmpnode.x),2)+Math.pow((initialRegion.latitude-tmpnode.y),2);
             array.push(tmpnode);
             i++;
             if (xmlDoc.getElementsByTagName("stationId")[i] == undefined) break;
           }
-          setResult(array);
-          setinitialRegion({
-            latitude: Number(array[0].y),
-            longitude: Number(array[0].x),
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02
-          })
+          handleResult(array);
+        
         }
       }
       xhr.send();
@@ -118,7 +125,9 @@ function SearchStation({stationToBus})
                 latitude: Number(item.y),
                 longitude: Number(item.x),//리턴 해줘야지 마커 뜸
               }}
-            />
+            >
+              <FontAwesome name="map-marker" size={30} color="#0067A3"/>
+              </Marker>
           );
         }
         )}

@@ -21,15 +21,18 @@ font-size : 15px;
 margin-bottom : 10px;
 `;
 
+
+  
 const Main = ({ navigation }) => {
-    return(
+
+    return (
         <Container>
             <StyledText>초기 화면</StyledText>
             <DetailText>Todo: 1. 즐겨찾기 목록이 빈 경우, 추가 버튼과 안내 문구</DetailText>
             <DetailText>2. 즐겨찾기가 선택된 경우, 해당 버스 정보 나타내기</DetailText>
             <Button 
             title = "+" 
-            onPress = {()=> navigation.navigate('FavList')}/>
+            onPress = {()=> navigation.navigate('SearchStation')}/>
             <Button
             title = "설정"
             onPress = {()=> navigation.navigate('Settings')}/>
@@ -40,7 +43,7 @@ const Main = ({ navigation }) => {
             title = "아주대"
             onPress = {() => navigation.navigate('AjouList')}/>
         </Container>
-    )
+    );
 }
 
 export default Main;

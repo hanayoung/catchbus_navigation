@@ -86,9 +86,9 @@ useEffect(() => {
 }, []);
 useInterval(()=>{
   console.log("iiiiiinnnnnnnn");
-    //setTime(Number(arr.predict1)*60);
-    setTime(Number(result.predict1)*60) // 일단 원하는 분 이전일 때 바로 알림이 뜨는지 확인 (time =1 이런 게 먹히는지 확인해보기 )
-    console.log("result in Nottttti second",result)
+    setTime(Number(result.predict1)*60);
+   // setTime(Number(stor.predict1)*60) // 일단 원하는 분 이전일 때 바로 알림이 뜨는지 확인 (time =1 이런 게 먹히는지 확인해보기 )
+    //console.log("result in Nottttti second",result)
     schedulePushNotification();
 },60000);
 
@@ -106,7 +106,7 @@ await Notifications.scheduleNotificationAsync({
    // 화면에 뜨는 내용
    content:{
     title:"Bus is Coming!",
-    body:`Bus is coming in ${(time/60)} minutes !`,
+    body:`${(time/60)} 분 후에 도착 !`,
    },
    trigger: { 
     seconds: 1, // 0은 안 먹히고 1도 한 5초? 후에 뜸

@@ -27,15 +27,15 @@ font-size : 15px;
 margin-bottom : 10px;
 `;
 
-const SearchBus = ({ route, navigation }) => {
+const SearchBus = ({ route, navigation, storage, setStorage, item }) => {
 
-    const item = route.params.item;
-
+    const itemId = item.id;
+    const ID = itemId;
     console.log("item id route is", item);
 
     return(
         <Container>
-            <SearchBussrc item = {item}/>
+            <SearchBussrc ID = {ID} storage={storage} setStorage={setStorage}/>
         </Container>
     )
 }

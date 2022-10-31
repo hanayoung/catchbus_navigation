@@ -31,6 +31,7 @@ IconButton.propTypes = {
     onPressOut: PropTypes.func,
     id: PropTypes.string,
     clicked: PropTypes.bool,
+    selected: PropTypes.bool,
 };
 
 export default IconButton;

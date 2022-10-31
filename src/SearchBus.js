@@ -3,10 +3,7 @@ import styled from 'styled-components/native';
 import { DOMParser } from 'xmldom';
 import Notification from './Notification';
 import { FlatList, StyleSheet, Text } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import AppLoading from 'expo-app-loading';
-import BusList from '../modules/BusList';
-import RealTime from '../modules/RealTime';
+import Bus from '../modules/Bus';
 
 const Container = styled.View`
 flex : 1;
@@ -22,7 +19,7 @@ font-size : 15px;
 margin-bottom : 10px;
 `;
 
-function SearchBus({ item }) {
+function SearchBus({ ID, storage, setStorage }) {
   //1. screens/SearchBus의 자식, screens/SearchBus로부터 stationID 받음
 
 
@@ -49,11 +46,14 @@ function SearchBus({ item }) {
 
   const [result, setResult] = useState([]); //도착정보 저장
   const [routeInfo, setRouteInfo] = useState([]); //노선정보 저장
-  const [merge, setMerge] = useState([]); //두 배열 합치기
-  const [isReady, setIsReady] = useState(false);
-  const [storage, setStorage] = useState({});
   const [isRunning, setIsRunning] = useState(false);
   const [delay, setDelay] = useState(30000);
+
+  const tmp_result={
+    predict1:6,
+    predict2:18,
+    routeName:70
+  }
 
   const handleRouteInfo = (item) => {
     setRouteInfo(routeInfo => [...routeInfo, item]);
@@ -118,7 +118,7 @@ function SearchBus({ item }) {
       alert(err);
     }
     if (routeInfo.length == 0) {
-      console.log("routeInfo is empty");
+    //  console.log("routeInfo is empty");
     }
 
   }
@@ -130,7 +130,7 @@ function SearchBus({ item }) {
       var xhr = new XMLHttpRequest();
       const url = 'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalList'; 
       var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D';
-      queryParams += '&' + encodeURIComponent('stationId') + '=' + encodeURIComponent(item.id); // xhr.open('GET', url + queryParams); 
+      queryParams += '&' + encodeURIComponent('stationId') + '=' + encodeURIComponent(ID); // xhr.open('GET', url + queryParams); 
       xhr.open('GET', url + queryParams);
       xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
@@ -151,11 +151,16 @@ function SearchBus({ item }) {
             tmpnode.loc2 = xmlDoc.getElementsByTagName("locationNo2")[i].textContent;
             tmpnode.remain2 = xmlDoc.getElementsByTagName("remainSeatCnt2")[i].textContent;
             tmpnode.staOrder = xmlDoc.getElementsByTagName("staOrder")[i].textContent;
-            array.push(tmpnode);
+
             for (var routeId in storage) {
-              if (tmpnode.routeId == routeId)
+              if (tmpnode.routeId == routeId){
+                //console.log("routeName: ", storage[routeId].routename);
                 tmpnode.clicked = true;
+             //   console.log("tmpnode: ", tmpnode);
+              }
             }
+            
+            array.push(tmpnode);
             i++;
             if (xmlDoc.getElementsByTagName("routeId")[i] == undefined) break;
           }
@@ -168,44 +173,23 @@ function SearchBus({ item }) {
       alert(err);
     }
     if (result.length == 0) {
-      console.log("result is empty");
+     // console.log("result is empty");
     }
   };
   //
   // 렌더링 핸들링
-  useEffect(() => {
-    Merge();
-  }, [routeInfo.length]);
-
   useInterval(() => {
-    searchBus()
+    searchBus();
    // console.log("this", result);
   //  console.log("this routeInfo",routeInfo);
   }, isRunning ? delay : null);
 
-  return isReady ? (
-      <Container>
-      <FlatList
-        keyExtractor={item => item.routeId}
-        data={merge}
-        style={[styles.flatlist]}
-        renderItem={({ item }) => (
-          <BusList
-            item={item}
-            saveResult={_saveResults}
-            storage={storage}
-          />
-        )}
-        windowSize={3}
-      />
-     
+  return (
+  //  console.log("result", result.length, "routeInfo", routeInfo.length),
+    <Container>
+      <Notification result={tmp_result}/>
+      <Bus result={result} routeInfo={routeInfo} storage={storage} setStorage={setStorage}/>
     </Container>
-  ) : (
-    <AppLoading
-      startAsync={_loadResult}
-      onFinish={() => setIsReady(true)}
-      onError={console.error}
-    />
   );
 }
 

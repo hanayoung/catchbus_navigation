@@ -24,14 +24,12 @@ font-size : 15px;
 margin-bottom : 10px;
 `;
 
-const SearchStation = ({ navigation }) => {
-    
-    const [item, setItem] = useState([]);
+const SearchStation = ({ navigation, item, setItem }) => {
 
     const stationToBus = (item) => {
         console.log("before bus search", item);
         setItem(item);
-        navigation.navigate('SearchBus', { item : item });
+        navigation.navigate('SearchBus');
       }
 
     return(

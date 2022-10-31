@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from'styled-components/native';
 import PropTypes from 'prop-types';
-import {TouchableOpacity, StyleSheet} from 'react-native';
+import {TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
 // 1. src/searchStation의 자식
 
 const Content_name = styled.Text`
@@ -17,6 +17,11 @@ font-size: 15px;
 const styles = StyleSheet.create({
     button: {
         alignItems: "center",
+        borderRadius: 10,
+        borderWidth: 1,
+        padding: 5,
+        margin: 3,
+        width: Dimensions.get('window').width-40,
     },
 });
 
@@ -34,7 +39,6 @@ const StationList = ({ item, goBus}) => {
         >
             <Content_name>{item.name}</Content_name>
             <Content_locate>{item.id}</Content_locate>
-            <Content_locate>위치: {item.x}, {item.y}</Content_locate>
         </TouchableOpacity>
     );
 };

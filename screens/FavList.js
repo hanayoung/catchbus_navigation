@@ -1,6 +1,8 @@
 import React from 'react';
 import {Button} from 'react-native';
 import styled from 'styled-components/native';
+import FavListsrc from '../src/FavListsrc';
+import {StyleSheet} from 'react-native';
 
 /*즐겨찾기*/
 /*todo: (1) 즐겨찾기에 등록된 목록 띄우기
@@ -22,22 +24,23 @@ font-size : 15px;
 margin-bottom : 10px;
 `;
 
-const FavList = ({ navigation }) => {
+const FavList = ({ navigation, storage, setStorage, choice, setChoice }) => {
     return(
         <Container>
-            <StyledText>즐겨찾기</StyledText>
-            <DetailText>Todo: 1. 즐겨찾기 목록 전부 보이기</DetailText>
-            <DetailText>2. 끌어올리면 별도의 변수로 저장, 메인페이지 띄우기</DetailText>
-            <DetailText>3. + 누르면 정류장검색으로 넘기기</DetailText>
-            <Button 
-            title = "+" 
-            onPress = {()=> navigation.navigate('SearchStation')}/>
             <Button
             title = "메인페이지"
             onPress = {()=> navigation.navigate('Main')}/>
+            <FavListsrc storage={storage} setStorage={setStorage} choice={choice} setChoice={setChoice} style={[styles.favlistsrc]}></FavListsrc>
     
         </Container>
     )
 }
+
+const styles = StyleSheet.create({
+    favlistsrc: {
+      flex: 1,
+      width: '100%',
+    }
+  })
 
 export default FavList;
