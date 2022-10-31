@@ -32,7 +32,6 @@ const StationList = ({ item, goBus}) => {
     return (
         <TouchableOpacity
         onPressOut = {() => {
-            console.log("item clicked", item.id, item.name);
             goBus(item);
         }}
         style = {styles.button}

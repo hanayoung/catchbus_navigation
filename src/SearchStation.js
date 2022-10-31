@@ -5,8 +5,10 @@ import { DOMParser } from 'xmldom';
 import StationList from '../modules/StationList';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from "expo-location";
-import { FontAwesome } from '@expo/vector-icons'; 
 
+import AppLoading from 'expo-app-loading';
+import axios from 'axios';
+import {FontAwesome} from '@expo/vector-icons';
 // 2. screens/SearchStation의 자식
 
 function SearchStation({stationToBus})
@@ -21,7 +23,6 @@ function SearchStation({stationToBus})
   }
 
   const ask = async () => {
-    const { granted } = await Location.requestForegroundPermissionsAsync();
     const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({ accuracy: 5 }); //coords를 통해 현재 위치의 좌표 받기
     setinitialRegion({
       latitude: latitude,
@@ -38,6 +39,7 @@ function SearchStation({stationToBus})
     arr.sort(function(a,b){
         return a.dis-b.dis;
     });
+    console.log("arr",arr);
     setResult(arr);
     setRegion(arr[0].x,arr[0].y);
 }
@@ -49,45 +51,31 @@ const setRegion=(x,y)=>{
         longitudeDelta:0.002
     })
     }
-
-
   const searchStation = async () => {
-    console.log("working");
     try {
-      var xhr = new XMLHttpRequest();
       const url = 'http://apis.data.go.kr/6410000/busstationservice/getBusStationList'; 
       var queryParams = '?' + encodeURIComponent('serviceKey') + '='+'UkgvlYP2LDE6M%2Blz55Fb0XVdmswp%2Fh8uAUZEzUbby3OYNo80KGGV1wtqyFG5IY0uwwF0LtSDR%2FIwPGVRJCnPyw%3D%3D'; 
       queryParams += '&' + encodeURIComponent('keyword') + '=' + encodeURIComponent(station); /**/ 
-      xhr.open('GET', url + queryParams);
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4) {
-          let xmlParser = new DOMParser();
-          let xmlDoc = xmlParser.parseFromString(this.responseText, "text/xml");
-          let i = 0;
-          let array = [];
-          while (1) {
-            var tmpnode = new Object();
-            tmpnode.index = i;
-            tmpnode.id = xmlDoc.getElementsByTagName("stationId")[i].textContent;
-            tmpnode.name = xmlDoc.getElementsByTagName("stationName")[i].textContent;
-            tmpnode.x = xmlDoc.getElementsByTagName("x")[i].textContent;
-            tmpnode.y = xmlDoc.getElementsByTagName("y")[i].textContent;
-            tmpnode.dis=Math.pow((initialRegion.longitude-tmpnode.x),2)+Math.pow((initialRegion.latitude-tmpnode.y),2);
-            array.push(tmpnode);
-            i++;
-            if (xmlDoc.getElementsByTagName("stationId")[i] == undefined) break;
-          }
-          handleResult(array);
-        
-        }
+      var result = await axios.get(url+queryParams);
+      let xmlParser = new DOMParser();
+      let xmlDoc = xmlParser.parseFromString(result.data, "text/xml");
+      let i = 0;
+      let array = [];
+      while (1) {
+        var tmpnode = new Object();
+        tmpnode.index = i;
+        tmpnode.id = xmlDoc.getElementsByTagName("stationId")[i].textContent;
+        tmpnode.name = xmlDoc.getElementsByTagName("stationName")[i].textContent;
+        tmpnode.x = xmlDoc.getElementsByTagName("x")[i].textContent;
+        tmpnode.y = xmlDoc.getElementsByTagName("y")[i].textContent;
+        tmpnode.dis=Math.pow((initialRegion.longitude-tmpnode.x),2)+Math.pow((initialRegion.latitude-tmpnode.y),2);
+        array.push(tmpnode);
+        i++;
+        if (xmlDoc.getElementsByTagName("stationId")[i] == undefined) break;
       }
-      xhr.send();
+      handleResult(array);
     }
     catch (err) {
-      alert(err);
-    }
-    if (result.length == 0) {
-      console.log("result is empty");
     }
   };
 
